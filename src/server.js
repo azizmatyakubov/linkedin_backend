@@ -1,12 +1,13 @@
 import express from 'express'
-import { append } from 'express/lib/response'
+import listendpoints from 'express-list-endpoints'
 
 const server = express()
 const PORT = process.env.PORT || 3002
 
+console.log(PORT)
 
 
-server.listen(PORT, ()=> {
+server.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}`)
+    console.table(listendpoints(server))
 })
-
