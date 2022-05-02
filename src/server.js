@@ -8,9 +8,11 @@ import mongoose from "mongoose"
 const server = express()
 const PORT = process.env.PORT || 3002
 
+//middlewares
 server.use(cors())
 server.use(express.json())
 
+//endpoints
 server.use("/experiences", experiencesRouter)
 server.use("/profile", profileRouter)
 
