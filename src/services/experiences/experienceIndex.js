@@ -1,7 +1,7 @@
 import express from "express";
 import experienceModel from "./model.js";
 import multer from "multer";
-import { saveExperiencesImage } from "../lib/fs-tools.js";
+import { saveExperiencesImage } from "../../lib/fs-tools.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
 
