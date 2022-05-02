@@ -2,21 +2,23 @@ import express from "express"
 import createError from "http-errors"
 import profileSchema from "./model.js"
 import { pipeline } from "stream"
-import { createReadStream, createWriteStream } from "fs-extra"
-import request from "request"
+// import { createReadStream, createWriteStream } from "fs-extra"
+// import request from "request"
+// import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 
 const profileRouter = express.Router()
 
 //CREATE ERRORS
+// finish pdf enpoint
 
 ////////////
 profileRouter.post("/", async (req, res, next) => {
   try {
     const profile = new profileSchema(req.body)
 
-    await profile.save()
+    const { _id } = await profile.save()
 
-    res.status(201).send(profile._id)
+    res.status(201).send(_id)
   } catch (error) {
     console.log(error)
     next(error)
@@ -35,7 +37,7 @@ profileRouter.get("/", async (req, res, next) => {
 })
 
 ////////////
-profileRouter.get("/profileId", async (req, res, next) => {
+profileRouter.get("/:profileId", async (req, res, next) => {
   try {
     const profile = await profileSchema.findById(req.params.profileId)
     if (profile) {
@@ -67,9 +69,9 @@ profileRouter.get("/profileId/CV", async (req, res, next) => {
 })
 
 ////////////
-profileRouter.put("/profileId", async (req, res, next) => {
+profileRouter.put("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findByIdAndUpdate(req.params.profileId, req.body)
+    const profile = await profileSchema.findByIdAndUpdate(req.params.profileId, req.body, { new: true })
     if (profile) {
       res.status(200).send(profile)
     } else {
@@ -81,9 +83,9 @@ profileRouter.put("/profileId", async (req, res, next) => {
   }
 })
 ////////////
-profileRouter.delete("/profileId", async (req, res, next) => {
+profileRouter.delete("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileRouter.findByIdAndDelete(req.params.profileId)
+    const profile = await profileSchema.findByIdAndDelete(req.params.profileId)
     if (profile) {
       res.status(200).send("Profile Destroyed")
     } else {
