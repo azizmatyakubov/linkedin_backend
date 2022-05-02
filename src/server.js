@@ -4,7 +4,7 @@ import listendpoints from 'express-list-endpoints'
 const server = express()
 const PORT = process.env.PORT || 3002
 
-console.log(PORT)
+
 
 
 server.listen(PORT, ()=>{
