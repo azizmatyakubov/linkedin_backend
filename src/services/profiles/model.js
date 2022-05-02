@@ -1,5 +1,5 @@
-import mongoose from "mongoose"
-const { Schema, model } = mongoose
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
 const profileSchema = new Schema(
   {
@@ -11,8 +11,9 @@ const profileSchema = new Schema(
     area: { type: String, required: true },
     image: { type: String, required: true },
     username: { type: String, required: true, unique: true },
+    experiences: [{ type: Schema.Types.ObjectId, ref: "Experience" }],
   },
   { timestamps: true }
-)
+);
 
-export default model("Profile", profileSchema)
+export default model("Profile", profileSchema);

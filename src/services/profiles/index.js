@@ -1,12 +1,13 @@
-import express from "express"
-import createError from "http-errors"
-import profileSchema from "./model.js"
-import { pipeline } from "stream"
+import express from "express";
+import createError from "http-errors";
+import profileSchema from "./model.js";
+import { pipeline } from "stream";
+import experienceSchema from "../experiences/model.js";
 // import { createReadStream, createWriteStream } from "fs-extra"
 // import request from "request"
 // import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 
-const profileRouter = express.Router()
+const profileRouter = express.Router();
 
 //CREATE ERRORS
 // finish pdf enpoint
@@ -14,87 +15,211 @@ const profileRouter = express.Router()
 ////////////
 profileRouter.post("/", async (req, res, next) => {
   try {
-    const profile = new profileSchema(req.body)
+    const profile = new profileSchema(req.body);
 
-    const { _id } = await profile.save()
+    const { _id } = await profile.save();
 
-    res.status(201).send(_id)
+    res.status(201).send(_id);
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 ////////////
 profileRouter.get("/", async (req, res, next) => {
   try {
-    const profile = await profileSchema.find()
-    res.status(200).send(profile)
+    const profile = await profileSchema.find();
+    res.status(200).send(profile);
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 ////////////
 profileRouter.get("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findById(req.params.profileId)
+    const profile = await profileSchema.findById(req.params.profileId);
     if (profile) {
-      res.status(200).send(profile)
+      res.status(200).send(profile);
     } else {
-      console.log("This profile does not exist")
+      console.log("This profile does not exist");
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 //  GET https://yourapi.herokuapp.com/api/profile/{userId}/CV
 // Generates and download a PDF with the CV of the user (details, picture, experiences)
 profileRouter.get("/profileId/CV", async (req, res, next) => {
   try {
     // const pdfToDowload = await getBooks()
-    res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
-    const source = getPdfReadableStream(pdfToDowload)
-    const destination = res
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${req.params.profileId}_CV.pdf`
+    );
+    const source = getPdfReadableStream(pdfToDowload);
+    const destination = res;
 
     pipeline(source, destination, (err) => {
-      if (err) console.log(err)
-    })
+      if (err) console.log(err);
+    });
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
 ////////////
 profileRouter.put("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findByIdAndUpdate(req.params.profileId, req.body, { new: true })
+    const profile = await profileSchema.findByIdAndUpdate(
+      req.params.profileId,
+      req.body,
+      { new: true }
+    );
     if (profile) {
-      res.status(200).send(profile)
+      res.status(200).send(profile);
     } else {
-      console.log("This profile does not exist")
+      console.log("This profile does not exist");
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 ////////////
 profileRouter.delete("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findByIdAndDelete(req.params.profileId)
+    const profile = await profileSchema.findByIdAndDelete(req.params.profileId);
     if (profile) {
-      res.status(200).send("Profile Destroyed")
+      res.status(200).send("Profile Destroyed");
     } else {
-      console.log("This profile does not exist")
+      console.log("This profile does not exist");
     }
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-})
+});
 
-export default profileRouter
+//----------------------------------creating the endponits for the experience
+profileRouter.post("/:userName/experiences", async (req, res, next) => {
+  try {
+    const user = await profileSchema.find({ userName: req.params.userName });
+    if (user) {
+      const experienceToInsert = await experienceSchema(req.body);
+      const modifiedUser = await profileSchema.findOneAndUpdate(
+        req.params.userName,
+        { $push: { experiences: experienceToInsert } },
+        { new: true, runValidators: true }
+      );
+      if (modifiedUser) {
+        res.send(modifiedUser);
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+profileRouter.get("/:userName/experiences", async (req, res, next) => {
+  try {
+    const user = await profileSchema.findOne({
+      userName: `${req.params.userName}`,
+    });
+    console.log(user.experiences);
+    if (user) {
+      res.send(user.experiences);
+    } else {
+      next(
+        createError(404, `Blog post with ${req.params.blogPostId} not found`)
+      );
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+profileRouter.get(
+  "/:userName/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const user = await profileSchema.findOne({
+        userName: req.params.userName,
+      });
+
+      if (user) {
+        const experience = user.experiences.find(
+          (experience) => (req.params.experienceId = experience._id.toString())
+        );
+        if (experience) {
+          res.send(experience);
+        } else {
+          next(createError(404, "Comment not found"));
+        }
+      } else {
+        next(createError(404, "Blog post not found"));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+profileRouter.put(
+  "/:userName/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const user = await profileSchema.findOne({
+        userName: req.params.userName,
+      });
+      if (user) {
+        const index = user.experiences.findIndex(
+          (experience) => experience._id.toString() === req.params.experienceId
+        );
+        if (index !== -1) {
+          user.experiences[index] = {
+            ...user.experiences[index],
+            ...req.body,
+          };
+          await user.save();
+          res.send(user);
+        } else {
+          next(createError(404, "comment not found"));
+        }
+      } else {
+        next(createError(404, "Blog post not found"));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+profileRouter.delete(
+  "/:userName/experiences/:experienceId",
+  async (req, res, next) => {
+    try {
+      const modifiedUser = await profileSchema.findOne(
+        { userName: req.params.userName },
+        {
+          $pull: { experiences: { _id: req.params.experienceId } },
+        },
+        { new: true }
+      );
+
+      if (modifiedUser) {
+        res.send(modifiedUser);
+      } else {
+        next(createError(404, "blogPost not found"));
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+export default profileRouter;
