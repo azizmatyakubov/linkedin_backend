@@ -2,11 +2,8 @@ import express from "express"
 import createError from "http-errors"
 import profileSchema from "./model.js"
 import { pipeline } from "stream"
-import { createReadStream } from "fs-extra"
-
-// const source = createReadStream("yourFile.json")
-// const destination =res
-// pipeline(source,destination)
+import { createReadStream, createWriteStream } from "fs-extra"
+import request from "request"
 
 const profileRouter = express.Router()
 
@@ -53,19 +50,21 @@ profileRouter.get("/profileId", async (req, res, next) => {
 })
 //  GET https://yourapi.herokuapp.com/api/profile/{userId}/CV
 // Generates and download a PDF with the CV of the user (details, picture, experiences)
-/* profileRouter.get("/profileId/CV", async (req, res, next) => {
+profileRouter.get("/profileId/CV", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findById(req.params.profileId)
-    if (profile) {
-      res.status(200).send(profile)
-    } else {
-      console.log("This profile does not exist")
-    }
+    // const pdfToDowload = await getBooks()
+    res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
+    const source = getPdfReadableStream(pdfToDowload)
+    const destination = res
+
+    pipeline(source, destination, (err) => {
+      if (err) console.log(err)
+    })
   } catch (error) {
     console.log(error)
     next(error)
   }
-}) */
+})
 
 ////////////
 profileRouter.put("/profileId", async (req, res, next) => {
