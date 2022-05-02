@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const { Schema, Model } = mongoose;
+const { Schema, model } = mongoose;
 
 const experienceSchema = new Schema(
   {
@@ -10,13 +10,12 @@ const experienceSchema = new Schema(
     endDate: { type: Date, required: true },
     description: { type: String, required: true },
     area: { type: String, required: true },
-    user: [{ type: Schema.Types.ObjectId, ref: "Profile" }],
     image: { type: String, required: true },
   },
   { timestamp: true }
 );
 
-export default experienceSchema;
+export default model("Experience", experienceSchema);
 /* {
         "_id": "5d925e677360c41e0046d1f5",  //server generated
         "role": "CTO",
