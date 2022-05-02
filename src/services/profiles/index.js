@@ -1,6 +1,12 @@
 import express from "express"
 import createError from "http-errors"
 import profileSchema from "./model.js"
+import { pipeline } from "stream"
+import { createReadStream } from "fs-extra"
+
+// const source = createReadStream("yourFile.json")
+// const destination =res
+// pipeline(source,destination)
 
 const profileRouter = express.Router()
 
@@ -89,3 +95,5 @@ profileRouter.delete("/profileId", async (req, res, next) => {
     next(error)
   }
 })
+
+export default profileRouter
