@@ -7,6 +7,11 @@ import q2m from "query-to-mongo";
 // import { createReadStream, createWriteStream } from "fs-extra"
 // import request from "request"
 // import { getPdfReadableStream } from "../../lib/pdf-tools.js"
+//-----for creating and upload a new image
+import multer from "multer";
+import { saveExperiencesImage } from "../../lib/fs-tools.js";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 
 const profileRouter = express.Router();
 
@@ -111,7 +116,10 @@ profileRouter.post("/:username/experiences", async (req, res, next) => {
   try {
     const user = await profileSchema.find({ _id: req.params.username });
     if (user) {
-      const experienceToInsert = await experienceSchema(req.body).save();
+      const experienceToInsert = await experienceSchema({
+        ...req.body,
+        user: req.params.username,
+      }).save();
 
       const modifiedUser = await profileSchema.findOneAndUpdate(
         { _id: req.params.username },
@@ -133,7 +141,6 @@ profileRouter.get("/:username/experiences", async (req, res, next) => {
     const user = await profileSchema
       .findById(req.params.username)
       .populate("experiences");
-
     console.log(user);
     if (user) {
       res.send(user);
@@ -155,9 +162,12 @@ profileRouter.get(
         .findById(req.params.userName)
         .populate("experiences");
       if (user) {
-        const experience = user.experiences.find(
-          (experience) => req.params.experienceId === experience._id.toString()
-        );
+        const experience = await user.experiences
+          .find(
+            (experience) =>
+              req.params.experienceId === experience._id.toString()
+          )
+          .populate("user");
         console.log(experience);
         if (experience) {
           res.send(experience);
@@ -221,6 +231,31 @@ profileRouter.delete(
       }
     } catch (error) {
       res.send(error);
+    }
+  }
+);
+
+//---------------------------------Change the experience picture
+const cloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: { folder: "experienceLinkedinImage" },
+  }),
+}).single("expImage");
+
+profileRouter.put(
+  "/:userId/experiences/:expId/picture",
+  cloudinaryUploader,
+  async (req, res, next) => {
+    try {
+      const experience = await experienceSchema.findByIdAndUpdate(
+        req.params.expId,
+        { image: req.file.path },
+        { new: true }
+      );
+      res.send(experience);
+    } catch (error) {
+      next(error);
     }
   }
 );
