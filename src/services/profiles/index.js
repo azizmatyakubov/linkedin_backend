@@ -153,14 +153,7 @@ profileRouter.get(
     try {
       const user = await profileSchema
         .findById(req.params.userName)
-        .populate("experiences")
-        // const user = await profileSchema.find().populate({ path: "experiences" });
-        // console.log(user);
-        .populate({
-          path: "experiences",
-          select:
-            " name surname email bio title area image username experiences",
-        });
+        .populate("experiences");
       if (user) {
         const experience = user.experiences.find(
           (experience) => req.params.experienceId === experience._id.toString()
@@ -184,9 +177,9 @@ profileRouter.put(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const user = await profileSchema.findOne({
-        userName: req.params.userName,
-      });
+      const user = await profileSchema
+        .findById(req.params.userName)
+        .populate("experiences");
       if (user) {
         const index = user.experiences.findIndex(
           (experience) => experience._id.toString() === req.params.experienceId
@@ -214,21 +207,20 @@ profileRouter.delete(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const modifiedUser = await profileSchema.findOneAndDelete(
+      const modifiedUser = await profileSchema.findByIdAndUpdate(
         req.params.userName,
         {
-          $pull: { experiences: { _id: req.params.experienceId } },
+          $pull: {
+            experiences: req.params.experienceId,
+          },
         },
         { new: true }
       );
-
       if (modifiedUser) {
         res.send(modifiedUser);
-      } else {
-        next(createError(404, "blogPost not found"));
       }
     } catch (error) {
-      next(error);
+      res.send(error);
     }
   }
 );
