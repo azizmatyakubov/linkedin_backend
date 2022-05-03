@@ -3,6 +3,7 @@ import createError from "http-errors";
 import profileSchema from "./model.js";
 import { pipeline } from "stream";
 import experienceSchema from "../experiences/model.js";
+import q2m from "query-to-mongo";
 // import { createReadStream, createWriteStream } from "fs-extra"
 // import request from "request"
 // import { getPdfReadableStream } from "../../lib/pdf-tools.js"
@@ -106,16 +107,18 @@ profileRouter.delete("/:profileId", async (req, res, next) => {
 });
 
 //----------------------------------creating the endponits for the experience
-profileRouter.post("/:userName/experiences", async (req, res, next) => {
+profileRouter.post("/:username/experiences", async (req, res, next) => {
   try {
-    const user = await profileSchema.find({ userName: req.params.userName });
+    const user = await profileSchema.find({ _id: req.params.username });
     if (user) {
-      const experienceToInsert = await experienceSchema(req.body);
+      const experienceToInsert = await experienceSchema(req.body).save();
+
       const modifiedUser = await profileSchema.findOneAndUpdate(
-        req.params.userName,
+        { _id: req.params.username },
         { $push: { experiences: experienceToInsert } },
         { new: true, runValidators: true }
       );
+
       if (modifiedUser) {
         res.send(modifiedUser);
       }
@@ -125,14 +128,15 @@ profileRouter.post("/:userName/experiences", async (req, res, next) => {
   }
 });
 
-profileRouter.get("/:userName/experiences", async (req, res, next) => {
+profileRouter.get("/:username/experiences", async (req, res, next) => {
   try {
-    const user = await profileSchema.findOne({
-      userName: `${req.params.userName}`,
-    });
-    console.log(user.experiences);
+    const user = await profileSchema
+      .findById(req.params.username)
+      .populate("experiences");
+
+    console.log(user);
     if (user) {
-      res.send(user.experiences);
+      res.send(user);
     } else {
       next(
         createError(404, `Blog post with ${req.params.blogPostId} not found`)
@@ -147,18 +151,25 @@ profileRouter.get(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const user = await profileSchema.findOne({
-        userName: req.params.userName,
-      });
-
+      const user = await profileSchema
+        .findById(req.params.userName)
+        .populate("experiences")
+        // const user = await profileSchema.find().populate({ path: "experiences" });
+        // console.log(user);
+        .populate({
+          path: "experiences",
+          select:
+            " name surname email bio title area image username experiences",
+        });
       if (user) {
         const experience = user.experiences.find(
-          (experience) => (req.params.experienceId = experience._id.toString())
+          (experience) => req.params.experienceId === experience._id.toString()
         );
+        console.log(experience);
         if (experience) {
           res.send(experience);
         } else {
-          next(createError(404, "Comment not found"));
+          next(createError(404, "Experience not found"));
         }
       } else {
         next(createError(404, "Blog post not found"));
@@ -203,8 +214,8 @@ profileRouter.delete(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const modifiedUser = await profileSchema.findOne(
-        { userName: req.params.userName },
+      const modifiedUser = await profileSchema.findOneAndDelete(
+        req.params.userName,
         {
           $pull: { experiences: { _id: req.params.experienceId } },
         },
