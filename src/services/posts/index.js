@@ -1,17 +1,12 @@
 import express from "express"
 import createError from "http-errors"
 import postSchema from "./model.js"
-import { pipeline } from "stream"
-// import { createReadStream, createWriteStream } from "fs-extra"
-// import request from "request"
-// import { getPdfReadableStream } from "../../lib/pdf-tools.js"
+
+
 
 const postRouter = express.Router()
 
-//CREATE ERRORS
-// finish pdf enpoint
 
-////////////
 postRouter.post("/", async (req, res, next) => {
   try {
     const post = new postSchema(req.body)
@@ -25,7 +20,7 @@ postRouter.post("/", async (req, res, next) => {
   }
 })
 
-////////////
+
 postRouter.get("/", async (req, res, next) => {
   try {
     const post = await postSchema.find()
@@ -36,7 +31,7 @@ postRouter.get("/", async (req, res, next) => {
   }
 })
 
-////////////
+
 postRouter.get("/:postId", async (req, res, next) => {
   try {
     const post = await postSchema.findById(req.params.postId)
@@ -51,7 +46,7 @@ postRouter.get("/:postId", async (req, res, next) => {
   }
 })
 
-////////////
+
 postRouter.put("/:postId", async (req, res, next) => {
   try {
     const post = await postSchema.findByIdAndUpdate(req.params.postId, req.body, { new: true })
@@ -65,7 +60,7 @@ postRouter.put("/:postId", async (req, res, next) => {
     next(error)
   }
 })
-////////////
+
 postRouter.delete("/:postId", async (req, res, next) => {
   try {
     const post = await postSchema.findByIdAndDelete(req.params.postId)
