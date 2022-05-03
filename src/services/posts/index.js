@@ -11,7 +11,7 @@ postRouter.post("/", async (req, res, next) => {
   try {
     const post = new postSchema(req.body)
 
-    const { _id } = await profile.save()
+    const { _id } = await post.save()
 
     res.status(201).send(_id)
   } catch (error) {
@@ -23,7 +23,7 @@ postRouter.post("/", async (req, res, next) => {
 
 postRouter.get("/", async (req, res, next) => {
   try {
-    const post = await postSchema.find()
+    const post = await postSchema.find().populate("user")
     res.status(200).send(post)
   } catch (error) {
     console.log(error)
