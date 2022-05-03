@@ -9,12 +9,23 @@ import q2m from "query-to-mongo"
 // import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 import multer from "multer"
 import { saveProfileAvatar } from "../../lib/fs-tools.js"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import { v2 as cloudinary } from "cloudinary"
 
 const profileRouter = express.Router()
 
+const cloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary, // this searches in .env for something called CLOUDINARY_URL which contains your API Environment variable
+    params: {
+      folder: "profile_avatars",
+    },
+  }),
+}).single("avatar")
+
 //CREATE ERRORS
 // finish pdf enpoint
-// post an avatar
+// post an avatar on cloudinary
 
 ////////////
 profileRouter.post("/", async (req, res, next) => {
@@ -32,26 +43,41 @@ profileRouter.post("/", async (req, res, next) => {
 ///////////
 //  POST https://yourapi.herokuapp.com/api/profile/{userId}/picture
 // Replace user profile picture (name = profile)
-profileRouter.post("/:userId/uploadAvatar", multer().single("avatar"), async (req, res, next) => {
+// profileRouter.post("/:profileId/uploadAvatar", multer().single("avatar"), async (req, res, next) => {
+//   try {
+//     // by now is saving the full image, not the URL, then i have to store in cloudinary and then modify "newImage"
+//     const profile = await profileSchema.findById(req.params.profileId)
+//     await saveProfileAvatar(`${req.params.userId}.jpeg`, req.file.buffer)
+
+//     if (profile) {
+//       // const newImage = await profileSchema(req.body).save()
+
+//       const updatedProfile = await profileSchema.findOneAndUpdate(
+//         { _id: req.params.username },
+//         { $push: { image: newImage } },
+//         { new: true, runValidators: true }
+//       )
+//       res.status(201).send(updatedProfile)
+//     } else {
+//       console.log("No Profile found")
+//     }
+
+//   } catch (error) {
+//     console.log(error)
+//     next(error)
+//   }
+// })
+//  POST https://yourapi.herokuapp.com/api/profile/{userId}/picture
+// Replace user profile picture (name = profile)
+profileRouter.put("/:profileId/uploadAvatar", cloudinaryUploader, async (req, res, next) => {
   try {
-    // by now is saving the full image, not the URL, then i have to store in cloudinary and then modify "newImage"
-    const profile = await profileSchema.findById(req.params.profileId)
-    await saveProfileAvatar(`${req.params.userId}.jpeg`, req.file.buffer)
+    const profile = await profileSchema.findByIdAndUpdate(req.params.profileId, { image: req.file.path }, { new: true })
 
     if (profile) {
-      // const newImage = await profileSchema(req.body).save()
-
-      const updatedProfile = await profileSchema.findOneAndUpdate(
-        { _id: req.params.username },
-        { $push: { image: newImage } },
-        { new: true, runValidators: true }
-      )
-      res.status(201).send(updatedProfile)
+      res.status(201).send(profile)
     } else {
-      console.log("No Profile found")
+      console.log("profile not found")
     }
-
-    res.status(201).send("Uploaded Succesfully")
   } catch (error) {
     console.log(error)
     next(error)
