@@ -4,11 +4,12 @@ import profileSchema from "./model.js"
 import { pipeline } from "stream"
 import experienceSchema from "../experiences/model.js"
 import q2m from "query-to-mongo"
-// import { createReadStream, createWriteStream } from "fs-extra"
+import { createReadStream, createWriteStream } from "fs"
+import fs from "fs-extra"
 // import request from "request"
-// import { getPdfReadableStream } from "../../lib/pdf-tools.js"
+import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 import multer from "multer"
-import { saveProfileAvatar } from "../../lib/fs-tools.js"
+// import { saveProfileAvatar } from "../../lib/fs-tools.js"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
 
@@ -16,7 +17,7 @@ const profileRouter = express.Router()
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
-    cloudinary, // this searches in .env for something called CLOUDINARY_URL which contains your API Environment variable
+    cloudinary,
     params: {
       folder: "profile_avatars",
     },
@@ -25,7 +26,6 @@ const cloudinaryUploader = multer({
 
 //CREATE ERRORS
 // finish pdf enpoint
-// post an avatar on cloudinary
 
 ////////////
 profileRouter.post("/", async (req, res, next) => {
@@ -41,32 +41,7 @@ profileRouter.post("/", async (req, res, next) => {
   }
 })
 ///////////
-//  POST https://yourapi.herokuapp.com/api/profile/{userId}/picture
-// Replace user profile picture (name = profile)
-// profileRouter.post("/:profileId/uploadAvatar", multer().single("avatar"), async (req, res, next) => {
-//   try {
-//     // by now is saving the full image, not the URL, then i have to store in cloudinary and then modify "newImage"
-//     const profile = await profileSchema.findById(req.params.profileId)
-//     await saveProfileAvatar(`${req.params.userId}.jpeg`, req.file.buffer)
 
-//     if (profile) {
-//       // const newImage = await profileSchema(req.body).save()
-
-//       const updatedProfile = await profileSchema.findOneAndUpdate(
-//         { _id: req.params.username },
-//         { $push: { image: newImage } },
-//         { new: true, runValidators: true }
-//       )
-//       res.status(201).send(updatedProfile)
-//     } else {
-//       console.log("No Profile found")
-//     }
-
-//   } catch (error) {
-//     console.log(error)
-//     next(error)
-//   }
-// })
 //  POST https://yourapi.herokuapp.com/api/profile/{userId}/picture
 // Replace user profile picture (name = profile)
 profileRouter.put("/:profileId/uploadAvatar", cloudinaryUploader, async (req, res, next) => {
@@ -111,24 +86,24 @@ profileRouter.get("/:profileId", async (req, res, next) => {
 })
 //  GET https://yourapi.herokuapp.com/api/profile/{userId}/CV
 // Generates and download a PDF with the CV of the user (details, picture, experiences)
-// profileRouter.get("/profileId/CV", async (req, res, next) => {
-//   try {
-//     // const pdfToDowload = await getBooks()
-//     res.setHeader(
-//       "Content-Disposition",
-//       `attachment; filename=${req.params.profileId}_CV.pdf`
-//     );
-//     const source = getPdfReadableStream(pdfToDowload);
-//     const destination = res;
+profileRouter.get("/profileId/CV", async (req, res, next) => {
+  try {
+    const profile = await profile.findById(req.params.profileId)
+    //profile is a JSON object then u can use it ¿without GETBOOKS?
 
-//     pipeline(source, destination, (err) => {
-//       if (err) console.log(err);
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     next(error);
-//   }
-// });
+    // const pdfToDowload = await getBooks()
+    res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
+    const source = getPdfReadableStream(profile)
+    const destination = res
+
+    pipeline(source, destination, (err) => {
+      if (err) console.log(err)
+    })
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+})
 
 ////////////
 profileRouter.put("/:profileId", async (req, res, next) => {
