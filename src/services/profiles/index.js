@@ -86,19 +86,20 @@ profileRouter.get("/:profileId", async (req, res, next) => {
 })
 //  GET https://yourapi.herokuapp.com/api/profile/{userId}/CV
 // Generates and download a PDF with the CV of the user (details, picture, experiences)
-profileRouter.get("/profileId/CV", async (req, res, next) => {
+profileRouter.get("/:profileId/downloadCV", async (req, res, next) => {
   try {
-    const profile = await profile.findById(req.params.profileId)
-    //profile is a JSON object then u can use it ¿without GETBOOKS?
+    const profile = await profileSchema.findById(req.params.profileId)
+    if (profile) {
+      res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
+      const source = await getPdfReadableStream(profile)
+      const destination = res
 
-    // const pdfToDowload = await getBooks()
-    res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
-    const source = getPdfReadableStream(profile)
-    const destination = res
-
-    pipeline(source, destination, (err) => {
-      if (err) console.log(err)
-    })
+      pipeline(source, destination, (err) => {
+        if (err) console.log(err)
+      })
+    } else {
+      console.log("this profile does not exist")
+    }
   } catch (error) {
     console.log(error)
     next(error)

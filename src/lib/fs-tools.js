@@ -10,8 +10,8 @@ const { readJSON, writeJSON, writeFile } = fs
 
 const experiencesFolderPath = join(process.cwd(), "../../public/imageFolder/experience")
 
-const profileAvatarFolderPath = join(process.cwd(), "./public/profile/avatar")
-fs.ensureDirSync(profileAvatarFolderPath) // it partially works, first time crashes the app, but creates the PATH
+// const profileAvatarFolderPath = join(process.cwd(), "./public/profile/avatar")
+// fs.ensureDirSync(profileAvatarFolderPath) // it partially works, first time crashes the app, but creates the PATH
 
 console.log(experiencesFolderPath)
 
@@ -25,6 +25,6 @@ export const saveProfileAvatar = (fileName, contentAsBuffer) => {
 }
 
 // PDF's
-export const getPdf = () => readJSON(booksJSONPath) // change names
-const booksJSONPath = join(dataFolderPath, "books.json") // change names
+export const getPdf = () => readJSON(pdfJSONPath) // change names
+const pdfJSONPath = join(dataFolderPath, "books.json") // change names
 const dataFolderPath = join(dirname(fileURLToPath(import.meta.url)), "../data") // change names
