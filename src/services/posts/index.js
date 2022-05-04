@@ -1,22 +1,29 @@
 import express from "express"
 import createError from "http-errors"
 import postSchema from "./model.js"
-import { pipeline } from "stream"
-// import { createReadStream, createWriteStream } from "fs-extra"
-// import request from "request"
-// import { getPdfReadableStream } from "../../lib/pdf-tools.js"
+import multer from "multer"
+
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
 
 const postRouter = express.Router()
 
-//CREATE ERRORS
-// finish pdf enpoint
 
-////////////
-postRouter.post("/", async (req, res, next) => {
+const cloudinaryUploader = multer({
+    storage: new CloudinaryStorage({
+      cloudinary, // this searches in .env for something called CLOUDINARY_URL which contains your API Environment variable
+      params: {
+        folder: "postImages",
+      },
+    }),
+  }).single("post")
+
+postRouter.post("/:userId", async (req, res, next) => {
   try {
-    const post = new postSchema(req.body)
 
-    const { _id } = await profile.save()
+    const post = new postSchema({...req.body, user: req.params.userId})
+
+    const { _id } = await post.save()
 
     res.status(201).send(_id)
   } catch (error) {
@@ -25,10 +32,10 @@ postRouter.post("/", async (req, res, next) => {
   }
 })
 
-////////////
+
 postRouter.get("/", async (req, res, next) => {
   try {
-    const post = await postSchema.find()
+    const post = await postSchema.find().populate("user")
     res.status(200).send(post)
   } catch (error) {
     console.log(error)
@@ -36,25 +43,10 @@ postRouter.get("/", async (req, res, next) => {
   }
 })
 
-////////////
+
 postRouter.get("/:postId", async (req, res, next) => {
   try {
-    const post = await postSchema.findById(req.params.postId)
-    if (profile) {
-      res.status(200).send(post)
-    } else {
-      console.log("This post does not exist")
-    }
-  } catch (error) {
-    console.log(error)
-    next(error)
-  }
-})
-
-////////////
-postRouter.put("/:postId", async (req, res, next) => {
-  try {
-    const post = await postSchema.findByIdAndUpdate(req.params.postId, req.body, { new: true })
+    const post = await postSchema.findById(req.params.postId).populate("user")
     if (post) {
       res.status(200).send(post)
     } else {
@@ -65,7 +57,22 @@ postRouter.put("/:postId", async (req, res, next) => {
     next(error)
   }
 })
-////////////
+
+
+postRouter.put("/:postId", async (req, res, next) => {
+  try {
+    const post = await postSchema.findByIdAndUpdate(req.params.postId, req.body, { new: true }).populate("user")
+    if (post) {
+      res.status(200).send(post)
+    } else {
+      console.log("This post does not exist")
+    }
+  } catch (error) {
+    console.log(error)
+    next(error)
+  }
+})
+
 postRouter.delete("/:postId", async (req, res, next) => {
   try {
     const post = await postSchema.findByIdAndDelete(req.params.postId)
@@ -79,5 +86,22 @@ postRouter.delete("/:postId", async (req, res, next) => {
     next(error)
   }
 })
+
+// UPLOADING PICTURE FOR POST
+postRouter.post("/:postId/uploadImage", cloudinaryUploader, async(req, res, next) => {
+    try {
+      console.log(req.file)
+      const post = await postSchema.findByIdAndUpdate(req.params.postId, {image: req.file.path}, {new: true})
+      if(post) {
+        res.send(post.image)
+      } else {
+          console.log(error.message)
+      }
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  })
+
 
 export default postRouter
