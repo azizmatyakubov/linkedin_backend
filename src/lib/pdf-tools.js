@@ -16,14 +16,15 @@ export const getPdfReadableStream = async(profile) => {
     responseType: "arraybuffer"
   })
 
-  //  console.log(response.data)
+  //  console.log(response.data) 
+  // 77 55 33 22 66 44 ---> degjo3poer40
 
   const blogCoverURLParts = profile.image.split("/");
   const fileName = blogCoverURLParts[blogCoverURLParts.length - 1];
   const [id, extension] = fileName.split(".");
   const toBase64 = response.data.toString("base64")
-  const base64Image = `data:image/${extension};base64,${toBase64}`
-  // console.log(toBase64)
+  const base64Image = `data:image/${extension};base64,${toBase64}` 
+  // console.log(toBase64)           
   // console.log(extension)
   
  const printer = new PdfPrinter(fonts)
