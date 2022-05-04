@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/azizmatyakubov/linkedin_backend#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "cloudinary": "^1.29.1",
     "cors": "^2.8.5",
     "csv-express": "^1.2.2",

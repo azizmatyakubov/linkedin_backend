@@ -9,6 +9,7 @@ import multer from "multer"
 import { saveExperiencesImage } from "../../lib/fs-tools.js"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
+import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 import json2csv from "json2csv"
 import fs from "fs-extra"
 import csv from "csv-express"
@@ -90,14 +91,25 @@ profileRouter.get("/:profileId/downloadCV", async (req, res, next) => {
   try {
     const profile = await profileSchema.findById(req.params.profileId)
     //do a loop to retrieve every experiences ... toString/toObject
-    if (profile) {
-      res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
-      const source = await getPdfReadableStream(profile)
+    if (profile) { 
+
+    //   const pdfStream = await generateBlogPDF(blog);
+
+    //res.setHeader("Content-Type", "application/pdf");
+    // pipeline(pdfStream, res, (err) => {
+    //   if (err) {
+    //     console.log(err);
+    //   }
+    // });
+    //pdfStream.end();
+    res.setHeader("Content-Type", "application/pdf");
+      const source =await  getPdfReadableStream(profile)
       const destination = res
 
       pipeline(source, destination, (err) => {
         if (err) console.log(err)
       })
+     // source.end()
     } else {
       console.log("this profile does not exist")
     }

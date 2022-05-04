@@ -1,7 +1,8 @@
 import PdfPrinter from "pdfmake"
-import imageToBase64 from "image-to-base64"
+import axios from "axios"
 
-export const getPdfReadableStream = (profile) => {
+
+export const getPdfReadableStream = async(profile) => {
   const fonts = {
     Helvetica: {
       normal: "Helvetica",
@@ -9,27 +10,33 @@ export const getPdfReadableStream = (profile) => {
     },
   }
 
-  let profileImage = ""
 
-  // imageToBase64(profile.image) // Path to the image
-  //   .then((response) => {
-  //     console.log(response) // "cGF0aC90by9maWxlLmpwZw=="
-  //     profileImage = response
-  //   })
-  //   .catch((error) => {
-  //     console.log(error) // Logs an error if there was one
-  //   })
+ 
+  const response = await axios.get(profile.image, {
+    responseType: "arraybuffer"
+  })
 
-  const printer = new PdfPrinter(fonts)
+  //  console.log(response.data)
+
+  const blogCoverURLParts = profile.image.split("/");
+  const fileName = blogCoverURLParts[blogCoverURLParts.length - 1];
+  const [id, extension] = fileName.split(".");
+  const toBase64 = response.data.toString("base64")
+  const base64Image = `data:image/${extension};base64,${toBase64}`
+  // console.log(toBase64)
+  // console.log(extension)
+  
+ const printer = new PdfPrinter(fonts)
   // Generates and download a PDF with the CV of the user (details, picture, experiences)
 
+ 
   const docDefinition = {
     content: [
-      // {
-      //   image: imageToBase64(profileImage),
-      // },
       {
-        text: [profile.name, profile.surname],
+        image:base64Image
+      },
+      {
+        text: [profile.name + " " + profile.surname],
         style: "header",
       },
 
