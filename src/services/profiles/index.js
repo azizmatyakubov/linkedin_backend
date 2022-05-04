@@ -7,6 +7,14 @@ import q2m from "query-to-mongo";
 // import { createReadStream, createWriteStream } from "fs-extra"
 // import request from "request"
 // import { getPdfReadableStream } from "../../lib/pdf-tools.js"
+//-----for creating and upload a new image
+import multer from "multer";
+import { saveExperiencesImage } from "../../lib/fs-tools.js";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+import json2csv from "json2csv";
+import fs from "fs-extra";
+import csv from "csv-express";
 
 const profileRouter = express.Router();
 
@@ -41,7 +49,9 @@ profileRouter.get("/", async (req, res, next) => {
 ////////////
 profileRouter.get("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findById(req.params.profileId);
+    const profile = await profileSchema
+      .findById(req.params.profileId)
+      .populate("experiences");
     if (profile) {
       res.status(200).send(profile);
     } else {
@@ -111,7 +121,10 @@ profileRouter.post("/:username/experiences", async (req, res, next) => {
   try {
     const user = await profileSchema.find({ _id: req.params.username });
     if (user) {
-      const experienceToInsert = await experienceSchema(req.body).save();
+      const experienceToInsert = await experienceSchema({
+        ...req.body,
+        user: req.params.username,
+      }).save();
 
       const modifiedUser = await profileSchema.findOneAndUpdate(
         { _id: req.params.username },
@@ -133,10 +146,9 @@ profileRouter.get("/:username/experiences", async (req, res, next) => {
     const user = await profileSchema
       .findById(req.params.username)
       .populate("experiences");
-
-    console.log(user);
+    console.log(user.experiences);
     if (user) {
-      res.send(user);
+      res.send(user.experiences);
     } else {
       next(
         createError(404, `Blog post with ${req.params.blogPostId} not found`)
@@ -155,10 +167,13 @@ profileRouter.get(
         .findById(req.params.userName)
         .populate("experiences");
       if (user) {
-        const experience = user.experiences.find(
-          (experience) => req.params.experienceId === experience._id.toString()
-        );
-        console.log(experience);
+        const experience = await user.experiences
+          .find(
+            (experience) =>
+              req.params.experienceId === experience._id.toString()
+          )
+          .populate("user");
+        console.log(user.experiences);
         if (experience) {
           res.send(experience);
         } else {
@@ -224,5 +239,55 @@ profileRouter.delete(
     }
   }
 );
+
+//---------------------------------Change the experience picture
+const cloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: { folder: "experienceLinkedinImage" },
+  }),
+}).single("expImage");
+
+profileRouter.put(
+  "/:userId/experiences/:expId/picture",
+  cloudinaryUploader,
+  async (req, res, next) => {
+    try {
+      const experience = await experienceSchema.findByIdAndUpdate(
+        req.params.expId,
+        { image: req.file.path },
+        { new: true }
+      );
+      res.send(experience);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+//---------------------------for downloading the csv
+
+profileRouter.get("/:userId/downloadExperiencesCSV", async (req, res, next) => {
+  try {
+    var filename = "experiences.csv";
+
+    experienceSchema
+      .find({ user: req.params.userId })
+      .lean()
+      .exec({}, function (err, experiences) {
+        if (err) res.send(err);
+
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=" + filename
+        );
+        res.csv(experiences, true);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 export default profileRouter;
