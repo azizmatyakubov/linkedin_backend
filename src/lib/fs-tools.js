@@ -23,8 +23,3 @@ export const saveExperiencesImage = (fileName, contentAsBuffer) => {
 export const saveProfileAvatar = (fileName, contentAsBuffer) => {
   writeFile(join(profileAvatarFolderPath, fileName), contentAsBuffer)
 }
-
-// PDF's
-export const getPdf = () => readJSON(pdfJSONPath) // change names
-const pdfJSONPath = join(dataFolderPath, "books.json") // change names
-const dataFolderPath = join(dirname(fileURLToPath(import.meta.url)), "../data") // change names

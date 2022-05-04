@@ -4,12 +4,9 @@ import profileSchema from "./model.js"
 import { pipeline } from "stream"
 import experienceSchema from "../experiences/model.js"
 import q2m from "query-to-mongo"
-import { createReadStream, createWriteStream } from "fs"
 import fs from "fs-extra"
-// import request from "request"
 import { getPdfReadableStream } from "../../lib/pdf-tools.js"
 import multer from "multer"
-// import { saveProfileAvatar } from "../../lib/fs-tools.js"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import { v2 as cloudinary } from "cloudinary"
 
@@ -89,6 +86,7 @@ profileRouter.get("/:profileId", async (req, res, next) => {
 profileRouter.get("/:profileId/downloadCV", async (req, res, next) => {
   try {
     const profile = await profileSchema.findById(req.params.profileId)
+    //do a loop to retrieve every experiences ... toString/toObject
     if (profile) {
       res.setHeader("Content-Disposition", `attachment; filename=${req.params.profileId}_CV.pdf`)
       const source = await getPdfReadableStream(profile)

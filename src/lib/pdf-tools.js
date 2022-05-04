@@ -1,4 +1,5 @@
 import PdfPrinter from "pdfmake"
+import imageToBase64 from "image-to-base64"
 
 export const getPdfReadableStream = (profile) => {
   const fonts = {
@@ -8,30 +9,49 @@ export const getPdfReadableStream = (profile) => {
     },
   }
 
+  let profileImage = ""
+
+  // imageToBase64(profile.image) // Path to the image
+  //   .then((response) => {
+  //     console.log(response) // "cGF0aC90by9maWxlLmpwZw=="
+  //     profileImage = response
+  //   })
+  //   .catch((error) => {
+  //     console.log(error) // Logs an error if there was one
+  //   })
+
   const printer = new PdfPrinter(fonts)
   // Generates and download a PDF with the CV of the user (details, picture, experiences)
+
   const docDefinition = {
     content: [
+      // {
+      //   image: imageToBase64(profileImage),
+      // },
       {
-        text: profile.name,
+        text: [profile.name, profile.surname],
         style: "header",
       },
-      profile.surname,
-      {
-        text: "Subheader 1 - using subheader style",
-        style: "subheader",
-      },
-      "put here the PATH like profile.name",
 
       {
-        text: "Subheader 2 - using subheader style",
+        text: profile.title,
         style: "subheader",
+        margin: [0, 10, 0, 10],
       },
-      "put here the PATH like profile.name",
 
       {
-        text: "It is possible to apply multiple styles, by passing an array. This paragraph uses two styles: quote and small. When multiple styles are provided, they are evaluated in the specified order which is important in case they define the same properties",
-        style: ["quote", "small"],
+        text: profile.email,
+        style: "quote",
+        margin: [0, 10, 0, 0],
+      },
+      {
+        text: profile.area,
+        style: "quote",
+        margin: [0, 10, 0, 10],
+      },
+      {
+        text: profile.bio,
+        style: "quote",
       },
     ],
     styles: {
