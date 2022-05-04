@@ -85,7 +85,7 @@
 // //   multer().single("image"),
 // //   async (req, res, next) => {
 // //     try {
-// //       await saveExperiencesImage(req.file.originalname, req.file.buffer);
+// //       await saveExperiencesImage(rrm -rf node_moduleseq.file.originalname, req.file.buffer);
 // //       res.send();
 // //     } catch (error) {
 // //       next(error);
