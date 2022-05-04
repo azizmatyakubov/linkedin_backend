@@ -12,6 +12,9 @@ import multer from "multer";
 import { saveExperiencesImage } from "../../lib/fs-tools.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
+import json2csv from "json2csv";
+import fs from "fs-extra";
+import csv from "csv-express";
 
 const profileRouter = express.Router();
 
@@ -46,7 +49,9 @@ profileRouter.get("/", async (req, res, next) => {
 ////////////
 profileRouter.get("/:profileId", async (req, res, next) => {
   try {
-    const profile = await profileSchema.findById(req.params.profileId);
+    const profile = await profileSchema
+      .findById(req.params.profileId)
+      .populate("experiences");
     if (profile) {
       res.status(200).send(profile);
     } else {
@@ -141,9 +146,9 @@ profileRouter.get("/:username/experiences", async (req, res, next) => {
     const user = await profileSchema
       .findById(req.params.username)
       .populate("experiences");
-    console.log(user);
+    console.log(user.experiences);
     if (user) {
-      res.send(user);
+      res.send(user.experiences);
     } else {
       next(
         createError(404, `Blog post with ${req.params.blogPostId} not found`)
@@ -168,7 +173,7 @@ profileRouter.get(
               req.params.experienceId === experience._id.toString()
           )
           .populate("user");
-        console.log(experience);
+        console.log(user.experiences);
         if (experience) {
           res.send(experience);
         } else {
@@ -259,5 +264,30 @@ profileRouter.put(
     }
   }
 );
+
+//---------------------------for downloading the csv
+
+profileRouter.get("/:userId/downloadExperiencesCSV", async (req, res, next) => {
+  try {
+    var filename = "experiences.csv";
+
+    experienceSchema
+      .find({ user: req.params.userId })
+      .lean()
+      .exec({}, function (err, experiences) {
+        if (err) res.send(err);
+
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=" + filename
+        );
+        res.csv(experiences, true);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 export default profileRouter;
