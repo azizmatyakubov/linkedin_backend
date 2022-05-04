@@ -18,10 +18,10 @@ const cloudinaryUploader = multer({
     }),
   }).single("post")
 
-postRouter.post("/:userId", async (req, res, next) => {
+postRouter.post("/", async (req, res, next) => {
   try {
 
-    const post = new postSchema({...req.body, user: req.params.userId})
+    const post = new postSchema(req.body)
 
     const { _id } = await post.save()
 
