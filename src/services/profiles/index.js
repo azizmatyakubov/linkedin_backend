@@ -12,6 +12,7 @@ import { getPdfReadableStream } from "../../lib/pdf-tools.js";
 import json2csv from "json2csv";
 import fs from "fs-extra";
 import csv from "csv-express";
+import mongoose from "mongoose";
 
 const profileRouter = express.Router();
 
@@ -223,36 +224,11 @@ profileRouter.get(
         } else {
           next(createError(404, "Experience not found"));
         }
-        await user.save();
-        res.send(user);
       } else {
         next(createError(404, "Blog post not found"));
       }
     } catch (error) {
       next(error);
-    }
-  }
-);
-
-profileRouter.delete(
-  "/:userName/experiences/:experienceId",
-  async (req, res, next) => {
-    try {
-      const modifiedUser = await profileSchema.findOneAndDelete(
-        req.params.userName,
-        {
-          $pull: { experiences: { _id: req.params.experienceId } },
-        },
-        { new: true }
-      );
-
-      if (modifiedUser) {
-        res.send(modifiedUser);
-      } else {
-        next(createError(404, "blogPost not found"));
-      }
-    } catch (error) {
-      console.log(error);
     }
   }
 );
@@ -261,26 +237,12 @@ profileRouter.put(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const user = await profileSchema
-        .findById(req.params.userName)
-        .populate("experiences");
-      if (user) {
-        const index = user.experiences.findIndex(
-          (experience) => experience._id.toString() === req.params.experienceId
-        );
-        if (index !== -1) {
-          user.experiences[index] = {
-            ...user.experiences[index].toObject(),
-            ...req.body,
-          };
-          await user.save();
-          res.send(user);
-        } else {
-          next(createError(404, "comment not found"));
-        }
-      } else {
-        next(createError(404, "Blog post not found"));
-      }
+      const updated = await experienceSchema.findByIdAndUpdate(
+        req.params.experienceId,
+        req.body,
+        { new: true }
+      );
+      res.send(updated);
     } catch (error) {
       next(error);
     }
@@ -291,8 +253,8 @@ profileRouter.delete(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
-      const modifiedUser = await profileSchema.findByIdAndUpdate(
-        req.params.userName,
+      await profileSchema.findOneAndUpdate(
+        { username: req.params.userName },
         {
           $pull: {
             experiences: req.params.experienceId,
@@ -300,9 +262,8 @@ profileRouter.delete(
         },
         { new: true }
       );
-      if (modifiedUser) {
-        res.send(modifiedUser);
-      }
+      await experienceSchema.findByIdAndDelete(req.params.experienceId);
+      res.status(204).send();
     } catch (error) {
       res.send(error);
     }
