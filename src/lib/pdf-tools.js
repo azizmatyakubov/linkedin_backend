@@ -1,8 +1,7 @@
 import PdfPrinter from "pdfmake"
 import axios from "axios"
 
-
-export const getPdfReadableStream = async(profile) => {
+export const getPdfReadableStream = async (profile) => {
   const fonts = {
     Helvetica: {
       normal: "Helvetica",
@@ -10,35 +9,34 @@ export const getPdfReadableStream = async(profile) => {
     },
   }
 
-
- 
   const response = await axios.get(profile.image, {
-    responseType: "arraybuffer"
+    responseType: "arraybuffer",
   })
 
-  //  console.log(response.data) 
+  //  console.log(response.data)
   // 77 55 33 22 66 44 ---> degjo3poer40
 
-  const blogCoverURLParts = profile.image.split("/");
-  const fileName = blogCoverURLParts[blogCoverURLParts.length - 1];
-  const [id, extension] = fileName.split(".");
+  const blogCoverURLParts = profile.image.split("/")
+  const fileName = blogCoverURLParts[blogCoverURLParts.length - 1]
+  const [id, extension] = fileName.split(".")
   const toBase64 = response.data.toString("base64")
-  const base64Image = `data:image/${extension};base64,${toBase64}` 
-  // console.log(toBase64)           
+  const base64Image = `data:image/${extension};base64,${toBase64}`
+  // console.log(toBase64)
   // console.log(extension)
-  
- const printer = new PdfPrinter(fonts)
+
+  const printer = new PdfPrinter(fonts)
   // Generates and download a PDF with the CV of the user (details, picture, experiences)
 
- 
   const docDefinition = {
     content: [
       {
-        image:base64Image
+        image: base64Image,
+        width: 150,
       },
       {
         text: [profile.name + " " + profile.surname],
         style: "header",
+        margin: [0, 10, 0, 0],
       },
 
       {
