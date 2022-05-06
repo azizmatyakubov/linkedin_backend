@@ -41,6 +41,8 @@
     "nodemon": "^2.0.16",
     "pdfmake": "^0.2.5",
     "query-to-mongo": "^0.10.2",
-    "stream": "^0.0.2"
+    "stream": "^0.0.2",
+    "swagger-ui-express": "^4.3.0",
+    "yamljs": "^0.3.0"
   }
 }

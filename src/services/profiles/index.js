@@ -208,6 +208,7 @@ profileRouter.get(
   "/:userName/experiences/:experienceId",
   async (req, res, next) => {
     try {
+      console.log("userfivnid");
       const user = await profileSchema
         .findById(req.params.userName)
         .populate("experiences");

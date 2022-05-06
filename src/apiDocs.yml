@@ -1,0 +1,284 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: LINKEDIN BACKEND
+servers:
+  - url:http://localhost:3002
+  description:Local server
+  - url:https://linkedin-backend-01.herokuapp.com/
+  description:deployed server
+paths:
+  /profile:
+    summary: GET PROFILES
+    get:
+      summary: Get alle profiles
+      description: ""
+      operationId: ""
+      responses:
+        200:
+          description: profiles response
+    post:
+      summary: Create new profile
+      description: ""
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id: # the unique user id
+                  type: string
+                  format: uuid
+
+      responses:
+        default:
+          description: Default error sample response
+  /profile/{profileId}:
+    get:
+      summary: Get profile by profileId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        "404":
+          description: Must be valid id
+    put:
+      summary: Modify the profile by profileId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+
+      responses:
+        "404":
+          description: Must be valid id
+  /profile/{profileId}/downloadCV:
+    get:
+      summary: Get all the experiences by profileId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        200:
+          description: profiles response
+  /profile/{profileId}/experiences:
+    get:
+      summary: Get all the experiences by profileId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      responses:
+        200:
+          description: profiles response
+    post:
+      summary: Create new experience
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+      description: ""
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id: # the unique user id
+                  type: string
+                  format: uuid
+      responses:
+        "404":
+          description: Must be valid id
+  /profile/{profileId}/uploadAvatar:
+    put:
+      summary: modify the profile picture by profileId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: profileId
+      requestBody:
+        content:
+          image/png:
+            schema:
+              type: string
+              format: base64
+      responses:
+        "404":
+          description: Must be valid id
+  /profile/{profileId}/experiences/{experienceId}:
+    get:
+      summary: Get the experience by profileId and experienceId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: path
+          name: experienceId
+          required: true
+          schema:
+            type: string
+          description: Experience ID
+      responses:
+        "200":
+          description: Must be valid id
+    put:
+      summary: modify the experience by profileId and experienceId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: path
+          name: experienceId
+          required: true
+          schema:
+            type: string
+          description: Experience ID
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "404":
+          description: Must be valid id
+    delete:
+      summary: Delete the experience by profileId and experienceId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: path
+          name: experienceId
+          required: true
+          schema:
+            type: string
+          description: Experience ID
+
+      responses:
+        "404":
+          description: Must be valid id
+  /profile/{profileId}/downloadExperiencesCSV:
+    get:
+      summary: Get the experience by profileId and experienceId
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+          description: User ID
+
+      responses:
+        "200":
+          description: Must be valid id
+  /post:
+    get:
+      summary: Get alle profiles
+      description: ""
+      operationId: ""
+      responses:
+        200:
+          description: profiles response
+    post:
+      summary: Create new post
+      description: ""
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id: # the unique user id
+                  type: string
+                  format: uuid
+      responses:
+        "404":
+          description: Must be valid id
+  /post/{postId}:
+    get:
+      summary: Get profile by profileId
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        "404":
+          description: Must be valid id
+    put:
+      summary: modify the experience by profileId and experienceId
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+          description: post ID
+      requestBody:
+        description: a
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "404":
+          description: Must be valid id
+    delete:
+      summary: delete profile by profileId
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          schema:
+            type: string
+          description: Post ID
+      responses:
+        "404":
+          description: Must be valid id
+
+servers:
+  - url: https://linkedin-backend-01.herokuapp.com/
+    variables: {}
+    description: CLOUD SERVER
