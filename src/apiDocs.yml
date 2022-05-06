@@ -5,7 +5,7 @@ info:
 servers:
   - url:http://localhost:3002
   description:Local server
-  - url:https://linkedin-backend-01.herokuapp.com
+  - url:https://linkedin-interface.vercel.app
   description:deployed server
 paths:
   /profile:
